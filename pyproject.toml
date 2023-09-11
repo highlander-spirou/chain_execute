@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "table-reg"
+version = "0.1.1"
+description = ""
+authors = ["highlander-spirou <highlandetspirou2812@gmail.com>"]
+readme = "README.md"
+packages = [{include = "table_reg"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+opencv-python = "^4.8.0.76"
+pytesseract = "^0.3.10"
+matplotlib = "^3.7.2"
+networkx = "^3.1"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.2"
+
+[build-system]
+requires = ["poetry-core", "setuptools>=40.8.0"]
+build-backend = "poetry.core.masonry.api"
