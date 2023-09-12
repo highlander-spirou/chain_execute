@@ -2,7 +2,7 @@ from functools import partial
 from inspect import getfullargspec
 import networkx as nx
 from networkx import topological_sort
-from typing import Optional, TypedDict, Callable, Any, Union
+from typing import Optional, TypedDict, Callable, Any, Union, List
 
 
 class PartialFunc:
@@ -64,6 +64,7 @@ class ChainExecutor:
     def __init__(self, graph: nx.DiGraph, print_to_console: bool) -> None:
         self.g = graph
         self.log = print_to_console
+        self.__node_add_order: List[str] = []
 
     def __node_ref(self, node_name) -> NodeAttrInterface:
         """
@@ -112,6 +113,7 @@ class ChainExecutor:
 
         name = func.__name__ if node_name is None else node_name
         self.g.add_nodes_from([(name, attr)])
+        self.__node_add_order.append(name)
         return self
 
     def add_edge(self, u: str, v: str,  result_index: Optional[int] = None, arg_index: Optional[int] = None):
@@ -153,6 +155,12 @@ class ChainExecutor:
         while i < len(ordered_node_names) - 1:
             self.g.add_edge(ordered_node_names[i], ordered_node_names[i+1])
             i += 1
+
+    def add_edge_from_node_order(self):
+        """
+        Add linear edge relationships base on the order of node adding to the object
+        """
+        self.add_linear_edge(self.__node_add_order)
 
     def compile_graph(self):
         """
