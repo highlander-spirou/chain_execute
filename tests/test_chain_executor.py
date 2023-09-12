@@ -1,6 +1,5 @@
-import pytest
 import networkx as nx
-from table_reg.chain_executor import ChainExecutor
+from ChainExecutor.chain_executor import ChainExecutor
 
 def test_full_case():
     def func1(ex1a, ex1b):

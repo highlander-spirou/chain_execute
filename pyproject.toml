@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "table-reg"
+name = "ChainExecutor"
 version = "0.1.1"
 description = ""
 authors = ["highlander-spirou <highlandetspirou2812@gmail.com>"]
 readme = "README.md"
-packages = [{include = "table_reg"}]
+packages = [{include = "ChainExecutor"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
