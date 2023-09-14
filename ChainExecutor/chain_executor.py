@@ -61,6 +61,7 @@ class ChainExecutor:
     - g (`nx.DiGraph`)
     - print_to_console (`bool`): Enable terminal log 
     """
+
     def __init__(self, graph: nx.DiGraph, print_to_console: bool) -> None:
         self.g = graph
         self.log = print_to_console
@@ -95,6 +96,22 @@ class ChainExecutor:
         """
         sorted_args_array = sorted(args_array, key=lambda x: x[0])
         return [i[1] for i in sorted_args_array]
+
+    def __reset_node(self, node_name: str):
+        """
+        Reset the node's partial function and result to `None`
+        """
+        node_ref = self.__node_ref(node_name)
+        node_ref['partial_fn'] = None
+        node_ref['result'] = None
+
+    def __compile_node(self, node_name: str):
+        node_ref = self.__node_ref(node_name)
+        if "args" in node_ref:
+            node_ref['partial_fn'] = PartialFunc(
+                fn=node_ref['executor'], defaults=node_ref['args'])
+        else:
+            node_ref['partial_fn'] = PartialFunc(fn=node_ref['executor'])
 
     def add_node(self, func, node_name: Optional[str] = None, args: Optional[dict] = None):
         """
@@ -156,28 +173,50 @@ class ChainExecutor:
             self.g.add_edge(ordered_node_names[i], ordered_node_names[i+1])
             i += 1
 
-    def add_edge_from_node_order(self):
+    def add_edge_from_node_order(self, exclude: Optional[Union[str, list]] = None, reset_after_add=False):
         """
-        Add linear edge relationships base on the order of node adding to the object
+        Add linear edge relationships base on the order of node adding to the object.
+
+        @ Parameters:
+
+        - exclude: Exclude the node
+
+        - reset_after_add: clear the node history, so that this function can be ran in future. 
+        Usually need when constructing complex graph having multi-stage 
         """
-        self.add_linear_edge(self.__node_add_order)
+        if exclude is not None:
+            if type(exclude) == str:
+                node_order = [i for i in self.__node_add_order if i != exclude]
+            else:
+                node_order = [
+                    i for i in self.__node_add_order if i not in exclude]
+        else:
+            node_order = self.__node_add_order
+
+        self.add_linear_edge(node_order)
+
+        if reset_after_add:
+            self.__node_add_order = []
 
     def compile_graph(self):
         """
         Compile all node's executor with its external dependencies to partial function
         """
         for node_name in self.g.nodes:
-            node_ref = self.__node_ref(node_name)
-            if "args" in node_ref:
-                node_ref['partial_fn'] = PartialFunc(
-                    fn=node_ref['executor'], defaults=node_ref['args'])
-            else:
-                node_ref['partial_fn'] = PartialFunc(fn=node_ref['executor'])
+            self.__compile_node(node_name)
 
     def get_topological_sort(self):
         return [i for i in topological_sort(self.g)]
 
-    def get_node_result(self, node_name):
+    def get_node_result(self, node_name: Optional[str] = None):
+        """
+        Get node result by `node_name`.
+
+        If `node_name` not provided, return the result of the last node from topological_sort
+        """
+        if node_name is None:
+            last_node = self.get_topological_sort()[-1]
+            return self.__node_ref(last_node)['result']
         return self.__node_ref(node_name)['result']
 
     def reset_graph(self):
@@ -185,12 +224,27 @@ class ChainExecutor:
         Reset all nodes by change the node's `partial_fn` and `result` to `None`.
         Graph has to be re-compiled
         """
-        for i in self.get_topological_sort():
-            node_ref = self.__node_ref(i)
-            node_ref['partial_fn'] = None
-            node_ref['result'] = None
+        for i in self.g.nodes:
+            self.__reset_node(i)
 
-        return self
+    def reset_from_node(self, root_node_name: str, reset_root_node=True):
+        """
+        Reset all the nodes after the `root_node_name` from the topological sort.
+
+        This method is used when there are a dependencies change, or there are an update in the `root_node_name` result
+
+        @ Parameters
+        - reset_root_node: If False, reset all the nodes after the `root_node_name`, excluding it. If True, reset the `root_node_name`.  
+        """
+        node_order = self.get_topological_sort()
+        root_node_index = node_order.index(root_node_name)
+        if reset_root_node:
+            nodes_to_reset = node_order[root_node_index:]
+        else:
+            nodes_to_reset = node_order[root_node_index+1:]
+
+        for i in nodes_to_reset:
+            self.__reset_node(i)
 
     def execute_node(self, func: str):
         """
