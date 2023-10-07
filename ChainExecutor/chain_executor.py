@@ -62,8 +62,9 @@ class ChainExecutor:
     - print_to_console (`bool`): Enable terminal log 
     """
 
-    def __init__(self, graph: nx.DiGraph, print_to_console: bool) -> None:
-        self.g = graph
+    def __init__(self, graph: Optional[nx.DiGraph] = None,
+                 print_to_console: bool = False) -> None:
+        self.g = graph if graph is not None else nx.DiGraph()
         self.log = print_to_console
         self.__node_add_order: List[str] = []
 
@@ -246,6 +247,15 @@ class ChainExecutor:
         for i in nodes_to_reset:
             self.__reset_node(i)
 
+    def update_node_args(self, node_name: str, args: dict):
+        """
+        Update the node's external dependency (args) using `spread operator`, 
+        and reset all nodes from the updated node using `reset_from_node` method
+        """
+        node_ref = self.__node_ref(node_name)
+        node_ref['args'] = {**node_ref['args'], **args}
+        self.reset_from_node(node_name)
+
     def execute_node(self, func: str):
         """
         ## Run the graph recursively 
@@ -298,7 +308,7 @@ class ChainExecutor:
 
     def execute(self):
         """
-        Run the whole graph by topological sort the nodes
+        Compile and run the whole graph by topological sort the nodes
         """
         self.compile_graph()
         ordered_nodes = self.get_topological_sort()
