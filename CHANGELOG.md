@@ -1,3 +1,16 @@
+# 0.4.1
+
+
+## Change | Update
+- `init` ✅
+    - `init` method now automatically create `nx.DiGraph()` if not provided
+    - `print_to_console` method now has default method as `False`
+
+## New
+- `update_node_args` ✅
+    - Update the node's external dependency (args) using `spread operator`, and reset all nodes from the updated node using `reset_from_node` method
+
+
 # 0.3.0
 
 ## Refactor
@@ -13,16 +26,3 @@
 ## New
 - `reset_from_node` ✅
     - now the graph can be re-compile to run from `reset_root`, not entire graph
-
-
-# 0.4.0
-
-
-## Change | Update
-- `init` ✅
-    - `init` method now automatically create `nx.DiGraph()` if not provided
-    - `print_to_console` method now has default method as `False`
-
-## New
-- `update_node_args` ✅
-    - Update the node's external dependency (args) using `spread operator`, and reset all nodes from the updated node using `reset_from_node` method
