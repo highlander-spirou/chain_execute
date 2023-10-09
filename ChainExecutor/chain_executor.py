@@ -253,7 +253,11 @@ class ChainExecutor:
         and reset all nodes from the updated node using `reset_from_node` method
         """
         node_ref = self.__node_ref(node_name)
-        node_ref['args'] = {**node_ref['args'], **args}
+        if 'args' in node_ref:
+            node_ref['args'] = {**node_ref['args'], **args}
+        else:
+            node_ref['args'] = {**args}
+
         self.reset_from_node(node_name)
 
     def execute_node(self, func: str):

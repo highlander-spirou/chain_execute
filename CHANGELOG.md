@@ -1,5 +1,12 @@
-# 0.4.1
+# 0.4.2
 
+## Fix bug 
+- `update_node_args` 🪲
+    - Fix bug that `update_node_args` not working when `args` is initially empty
+
+
+
+# 0.4.1
 
 ## Change | Update
 - `init` ✅

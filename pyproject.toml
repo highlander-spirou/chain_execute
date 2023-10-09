@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ChainExecutor"
-version = "0.4.1"
+version = "0.4.2"
 description = ""
 authors = ["highlander-spirou <highlandetspirou2812@gmail.com>"]
 readme = "README.md"
