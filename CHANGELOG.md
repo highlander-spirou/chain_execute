@@ -1,3 +1,10 @@
+# 0.4.3
+
+## Fix bug 
+- `execute_node` 🪲
+    - Fix bug that `execute_node` not compiled, leading to `partial_fn` is `None`
+
+
 # 0.4.2
 
 ## Fix bug 

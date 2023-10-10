@@ -305,6 +305,7 @@ class ChainExecutor:
                 if self.log:
                     print(f'Root node reach: {func}')
 
+                self.__compile_node(func)
                 fn_result = current_node_ref['partial_fn']()
 
             current_node_ref['result'] = fn_result
