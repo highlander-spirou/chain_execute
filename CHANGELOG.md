@@ -1,3 +1,10 @@
+# 0.5.0
+
+## Change | Update
+- `update_node_args` ✅
+    - **BREAKING CHANGE**: Change `update_node_args` syntax, now using `NodeArgsInterface` | `List[NodeArgsInterface]`, allow to update multiple node dependencies at the same time.
+
+
 # 0.4.3
 
 ## Fix bug 

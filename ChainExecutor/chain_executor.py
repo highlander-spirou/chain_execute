@@ -52,6 +52,15 @@ class EdgeAttrInterface(TypedDict):
     arg_index: Optional[int]
 
 
+class NodeArgsInterface(TypedDict):
+    """
+    Interface for node args (`update_node_args` argument)
+    """
+    node_name: str
+    args: dict
+    
+
+
 class ChainExecutor:
     """
     Execute chain of functions with Direct Acyclic Graph manners.
@@ -66,6 +75,7 @@ class ChainExecutor:
                  print_to_console: bool = False) -> None:
         self.g = graph if graph is not None else nx.DiGraph()
         self.log = print_to_console
+        self.topology: Optional[list] = None
         self.__node_add_order: List[str] = []
 
     def __node_ref(self, node_name) -> NodeAttrInterface:
@@ -114,6 +124,17 @@ class ChainExecutor:
         else:
             node_ref['partial_fn'] = PartialFunc(fn=node_ref['executor'])
 
+    def __update_node_args(self, node_name: str, args: dict):
+        """
+        Update the node's external dependency (args) using `spread operator`, 
+        and reset all nodes from the updated node using `reset_from_node` method
+        """
+        node_ref = self.__node_ref(node_name)
+        if 'args' in node_ref:
+            node_ref['args'] = {**node_ref['args'], **args}
+        else:
+            node_ref['args'] = {**args}
+    
     def add_node(self, func, node_name: Optional[str] = None, args: Optional[dict] = None):
         """
         Create a node attribute tuple with default attribute
@@ -206,8 +227,19 @@ class ChainExecutor:
         for node_name in self.g.nodes:
             self.__compile_node(node_name)
 
-    def get_topological_sort(self):
-        return [i for i in topological_sort(self.g)]
+    def get_topological_sort(self, force=False):
+        """
+        @Args:
+            - `force`: If set to True, rerun rather than get from cache.
+            
+        `force` will also refresh the cache 
+        """
+        if force == True and self.topology is not None:
+            return self.topology
+        else:
+            topology = [i for i in topological_sort(self.g)]
+            self.topology = topology
+            return topology
 
     def get_node_result(self, node_name: Optional[str] = None):
         """
@@ -247,18 +279,27 @@ class ChainExecutor:
         for i in nodes_to_reset:
             self.__reset_node(i)
 
-    def update_node_args(self, node_name: str, args: dict):
+    def update_node_args(self, args: NodeArgsInterface | List[NodeArgsInterface]):
         """
         Update the node's external dependency (args) using `spread operator`, 
         and reset all nodes from the updated node using `reset_from_node` method
         """
-        node_ref = self.__node_ref(node_name)
-        if 'args' in node_ref:
-            node_ref['args'] = {**node_ref['args'], **args}
+        if type(args) != list:
+            self.__update_node_args(args['node_name'], args['args'])
+            self.reset_from_node(args['node_name'])
         else:
-            node_ref['args'] = {**args}
+            rank = None
+            node_to_reset = None
+            for node in args:
+                self.__update_node_args(node['node_name'], node['args'])
 
-        self.reset_from_node(node_name)
+                # rank the node
+                node_index = self.get_topological_sort().index(node['node_name'])
+                if rank is None or node_index < rank:
+                    rank = node_index
+                    node_to_reset = node['node_name']
+                    
+            self.reset_from_node(node_to_reset)
 
     def execute_node(self, func: str):
         """
