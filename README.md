@@ -5,8 +5,11 @@ This library's purpose is to make complex program (where functions are depend wi
 This project is served as a learning tool:
 
 ✅ Develop a package in Python with proper test, Changelog management, Code docs and version control
+
 ✅ Works with OOP, Interfaces, Types, ...
+
 ✅ Working with DAGs
+
 ✅ Implement a solid mindset of a software developer
 
 ## Implementation
